@@ -31,7 +31,9 @@ auto run(int const argc, char const* const* const argv) -> int {
 
 	auto request = kcurl::easy::Request{.url = "https://opensource.org/robots.txt"};
 	if (!args.empty()) {
-		if (args.size() > 1 || is_option(args.front())) { return print_usage(stderr); }
+		if (args.size() > 1 || is_option(args.front())) {
+			return print_usage(stderr);
+		}
 		request.url = args.front();
 	}
 

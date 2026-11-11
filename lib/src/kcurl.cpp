@@ -29,7 +29,9 @@ constexpr auto escape_entries_v = std::array{
 };
 
 void append_to(std::string& out, Query const& query) {
-	if (query.key.empty()) { return; }
+	if (query.key.empty()) {
+		return;
+	}
 	if (!query.value.empty()) {
 		std::format_to(std::back_inserter(out), "{}={}", query.key, query.value);
 	} else {
@@ -39,23 +41,35 @@ void append_to(std::string& out, Query const& query) {
 }
 
 [[nodiscard]] auto serialize_queries(std::span<Query const> queries) -> std::string {
-	if (queries.empty()) { return {}; }
+	if (queries.empty()) {
+		return {};
+	}
 	auto ret = std::string{};
-	for (auto const& query : queries) { append_to(ret, query); }
-	if (ret.ends_with('&')) { ret.pop_back(); }
+	for (auto const& query : queries) {
+		append_to(ret, query);
+	}
+	if (ret.ends_with('&')) {
+		ret.pop_back();
+	}
 	return ret;
 }
 
 void append_queries_to(std::string& out_url, std::span<Query const> queries) {
 	auto const serialized_queries = serialize_queries(queries);
-	if (!serialized_queries.empty()) { std::format_to(std::back_inserter(out_url), "?{}", serialized_queries); }
+	if (!serialized_queries.empty()) {
+		std::format_to(std::back_inserter(out_url), "?{}", serialized_queries);
+	}
 }
 
 [[nodiscard]] auto serialize_headers(std::span<Query> queries) -> std::vector<std::string> {
 	auto ret = std::vector<std::string>{};
 	for (auto& [key, value] : queries) {
-		if (key.empty()) { continue; }
-		if (value.empty() && !key.ends_with(':')) { key.push_back(';'); }
+		if (key.empty()) {
+			continue;
+		}
+		if (value.empty() && !key.ends_with(':')) {
+			key.push_back(';');
+		}
 		key += value;
 		ret.push_back(std::move(key));
 	}
@@ -100,7 +114,9 @@ auto http::escape(std::string_view const text) -> std::string {
 	ret.reserve(text.size());
 	for (char const ch : text) {
 		// NOLINTNEXTLINE(readability-qualified-auto)
-		auto const it = std::ranges::find_if(escape_entries_v, [ch](EscapeEntry const& e) { return e.ch == ch; });
+		auto const it = std::ranges::find_if(escape_entries_v, [ch](EscapeEntry const& e) {
+			return e.ch == ch;
+		});
 		if (it != escape_entries_v.end()) {
 			ret.append(it->str);
 			continue;
@@ -115,16 +131,22 @@ auto http::unescape(std::string_view escaped) -> std::string {
 	auto ret = std::string{};
 	ret.reserve(escaped.size());
 	auto const replace = [&] {
-		auto const pred = [&escaped](EscapeEntry const& e) { return escaped.starts_with(e.str); };
+		auto const pred = [&escaped](EscapeEntry const& e) {
+			return escaped.starts_with(e.str);
+		};
 		// NOLINTNEXTLINE(readability-qualified-auto)
 		auto const it = std::ranges::find_if(escape_entries_v, pred);
-		if (it == escape_entries_v.end()) { return false; }
+		if (it == escape_entries_v.end()) {
+			return false;
+		}
 		ret.push_back(it->ch);
 		escaped.remove_prefix(it->str.size());
 		return true;
 	};
 	while (!escaped.empty()) {
-		if (escaped.starts_with('%') && replace()) { continue; }
+		if (escaped.starts_with('%') && replace()) {
+			continue;
+		}
 		ret.push_back(escaped.front());
 		escaped.remove_prefix(1);
 	}
@@ -151,7 +173,9 @@ auto http::to_easy_request(Request request) -> easy::Request {
 
 auto http::perform(easy::Request const& request) -> Result<ByteArray> {
 	auto easy_result = easy::perform(request);
-	if (!easy_result) { return std::unexpected{to_error(easy_result.error())}; }
+	if (!easy_result) {
+		return std::unexpected{to_error(easy_result.error())};
+	}
 
 	auto response = to_response(std::move(easy_result).value());
 	if (response.status.is_error()) {
@@ -175,12 +199,26 @@ auto std::formatter<kcurl::Curl::Feature>::format(kcurl::Curl::Feature const fla
 	};
 
 	using Feature = kcurl::Curl::Feature;
-	if ((flags & Feature::TLS) == Feature::TLS) { append("TLS"); }
-	if ((flags & Feature::IPv6) == Feature::IPv6) { append("IPv6"); }
-	if ((flags & Feature::Win32Unicode) == Feature::Win32Unicode) { append("Win32Unicode"); }
-	if ((flags & Feature::UnixSockets) == Feature::UnixSockets) { append("UnixSockets"); }
-	if ((flags & Feature::Http2) == Feature::Http2) { append("HTTP2"); }
-	if ((flags & Feature::Http3) == Feature::Http3) { append("HTTP3"); }
-	if ((flags & Feature::LargeFile) == Feature::LargeFile) { append("LargeFile"); }
+	if ((flags & Feature::TLS) == Feature::TLS) {
+		append("TLS");
+	}
+	if ((flags & Feature::IPv6) == Feature::IPv6) {
+		append("IPv6");
+	}
+	if ((flags & Feature::Win32Unicode) == Feature::Win32Unicode) {
+		append("Win32Unicode");
+	}
+	if ((flags & Feature::UnixSockets) == Feature::UnixSockets) {
+		append("UnixSockets");
+	}
+	if ((flags & Feature::Http2) == Feature::Http2) {
+		append("HTTP2");
+	}
+	if ((flags & Feature::Http3) == Feature::Http3) {
+		append("HTTP3");
+	}
+	if ((flags & Feature::LargeFile) == Feature::LargeFile) {
+		append("LargeFile");
+	}
 	return fc.out();
 }
