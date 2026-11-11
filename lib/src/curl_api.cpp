@@ -23,7 +23,9 @@ class Handle {
 
 	[[nodiscard]] auto perform() -> std::expected<Response, Error> {
 		auto const err = curl_easy_perform(m_handle.get());
-		if (err != CURLE_OK) { return std::unexpected{Error{.code = CurlCode{err}, .text = std::move(m_error)}}; }
+		if (err != CURLE_OK) {
+			return std::unexpected{Error{.code = CurlCode{err}, .text = std::move(m_error)}};
+		}
 
 		auto response_code = long{};
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
@@ -57,13 +59,23 @@ class Handle {
 
 	void set_opts(Request const& request) {
 		set_opt(CURLOPT_URL, request.url.c_str());
-		if (!request.user_agent.empty()) { set_opt(CURLOPT_USERAGENT, request.user_agent.c_str()); }
-		if (!request.post_fields.empty()) { set_opt(CURLOPT_POSTFIELDS, request.post_fields.c_str()); }
-		if ((request.flags & Request::SkipPeerVerification)) { set_opt(CURLOPT_SSL_VERIFYPEER, 0l); }
-		if ((request.flags & Request::SkipHostnameVerification)) { set_opt(CURLOPT_SSL_VERIFYHOST, 0l); }
+		if (!request.user_agent.empty()) {
+			set_opt(CURLOPT_USERAGENT, request.user_agent.c_str());
+		}
+		if (!request.post_fields.empty()) {
+			set_opt(CURLOPT_POSTFIELDS, request.post_fields.c_str());
+		}
+		if ((request.flags & Request::SkipPeerVerification)) {
+			set_opt(CURLOPT_SSL_VERIFYPEER, 0l);
+		}
+		if ((request.flags & Request::SkipHostnameVerification)) {
+			set_opt(CURLOPT_SSL_VERIFYHOST, 0l);
+		}
 
 		curl_slist* chunk{};
-		for (auto const& text : request.headers) { chunk = curl_slist_append(chunk, text.c_str()); }
+		for (auto const& text : request.headers) {
+			chunk = curl_slist_append(chunk, text.c_str());
+		}
 		m_headers.reset(chunk);
 		set_opt(CURLOPT_HTTPHEADER, m_headers.get());
 	}
@@ -88,7 +100,9 @@ auto Curl::get_features() const -> Feature {
 	auto ret = Feature{};
 	auto const* version_info = curl_version_info(CURLVERSION_NOW);
 	auto const set_feature_flag = [&](int const in, Feature const flag) {
-		if ((version_info->features & in) == in) { ret = Feature(ret | flag); }
+		if ((version_info->features & in) == in) {
+			ret = Feature(ret | flag);
+		}
 	};
 	set_feature_flag(CURL_VERSION_SSL, TLS);
 	set_feature_flag(CURL_VERSION_IPV6, IPv6);
@@ -101,7 +115,9 @@ auto Curl::get_features() const -> Feature {
 }
 
 auto easy::perform(Request const& request) -> Result {
-	if (request.url.empty()) { return {}; }
+	if (request.url.empty()) {
+		return {};
+	}
 	auto handle = Handle{request};
 	return handle.perform();
 }

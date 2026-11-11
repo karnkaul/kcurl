@@ -59,7 +59,9 @@ class Status {
 
 	static constexpr auto get_status_category(Status::Code const status_code) -> Status::Category {
 		for (auto const& range : category_ranges_v) {
-			if (range.in_range(status_code)) { return range.category; }
+			if (range.in_range(status_code)) {
+				return range.category;
+			}
 		}
 		return Status::Category::Other;
 	}
