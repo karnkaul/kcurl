@@ -2,51 +2,11 @@ name: ci-pr
 on: [pull_request, workflow_dispatch]
 jobs:
   format-check:
-    runs-on: ubuntu-26.04
-    steps:
-      - uses: actions/checkout@v6
-      - name: init
-        run: .github/init_ubuntu_26.04.sh
-      - name: format code
-        run: scripts/format_code.sh
-      - name: check diff
-        run: .github/format_check_diff.sh
-  build-and-test:
-    continue-on-error: true
-    strategy:
-      matrix:
-        platform: [x64-linux, arm64-linux, x64-windows]
-        preset: [ninja-gcc, ninja-clang, vs26]
-        exclude:
-          - platform: x64-linux
-            preset: vs26
-          - platform: arm64-linux
-            preset: vs26
-        include:
-          - platform: x64-linux
-            os: ubuntu-26.04
-          - platform: arm64-linux
-            os: ubuntu-26.04-arm
-          - platform: x64-windows
-            os: windows-latest
-          - preset: vs26
-            build_args: --parallel
-          - preset: ninja-gcc
-            build_args: -- -v
-          - preset: ninja-clang
-            build_args: -- -v
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v6
-      - name: init
-        run: cmake -P .github/init.cmake
-      - name: configure
-        run: cmake -S . --preset=${{ matrix.preset }} -B build
-      - name: build debug
-        run: cmake --build build --config=Debug ${{ matrix.build_args }}
-      - name: build release
-        run: cmake --build build --config=Release ${{ matrix.build_args }}
-      - name: test debug
-        run: cd build && ctest -V -C Debug
-      - name: test release
-        run: cd build && ctest -V -C Release
+    uses: karnkaul/cpp_workflows/.github/workflows/format_check.yml@v1
+    with:
+      script: scripts/format_code.sh
+  ci:
+    uses: karnkaul/cpp_workflows/.github/workflows/modules_ci.yml@v1
+    with:
+      install: libcurl4-openssl-dev
+      configure_args: -DKCURL_LIBCURL_LINK_TARGET=libcurl.so
