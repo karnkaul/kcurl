@@ -8,4 +8,5 @@ jobs:
   ci:
     uses: karnkaul/cpp_workflows/.github/workflows/modules_ci.yml@v1
     with:
-      configure_args: -DKCURL_LIBCURL_LINK_TARGET=libcurl
+      install: libcurl4-openssl-dev
+      configure_args: -DKCURL_LIBCURL_LINK_TARGET=libcurl.so
