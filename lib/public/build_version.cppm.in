@@ -1,0 +1,7 @@
+export module kcurl.build_version;
+
+export import std;
+
+export namespace kcurl {
+inline constexpr std::string_view build_version_v{"v@PROJECT_VERSION@"};
+} // namespace kcurl

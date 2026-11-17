@@ -1,9 +1,4 @@
-#include "kcurl/build_version.hpp"
-#include "kcurl/curl.hpp"
-#include "kcurl/easy.hpp"
-#include <filesystem>
-#include <print>
-#include <span>
+import kcurl;
 
 namespace example {
 namespace {
@@ -24,15 +19,15 @@ auto run(int const argc, char const* const* const argv) -> int {
 		return std::string{"<exe>"};
 	}();
 
-	auto const print_usage = [&exe_name](std::FILE* const out) {
+	auto const print_usage = [&exe_name](std::ostream& out) {
 		std::println(out, "Usage: {} [URL]", exe_name);
-		return out == stderr ? EXIT_FAILURE : EXIT_SUCCESS;
+		return &out == &std::cerr ? 1 : 0;
 	};
 
 	auto request = kcurl::easy::Request{.url = "https://opensource.org/robots.txt"};
 	if (!args.empty()) {
 		if (args.size() > 1 || is_option(args.front())) {
-			return print_usage(stderr);
+			return print_usage(std::cerr);
 		}
 		request.url = args.front();
 	}
@@ -45,14 +40,14 @@ auto run(int const argc, char const* const* const argv) -> int {
 
 	if (!result) {
 		auto const& error = result.error();
-		std::println(stderr, "error ({}): {}", std::int64_t(error.code), error.text);
-		return EXIT_FAILURE;
+		std::println(std::cerr, "error ({}): {}", static_cast<std::int64_t>(error.code), error.text);
+		return 1;
 	}
 
 	auto const text = result->bytes.as_string_view();
 	std::println("success ({})\n{}", result->code, text);
 
-	return EXIT_SUCCESS;
+	return 0;
 }
 } // namespace
 } // namespace example
@@ -61,10 +56,10 @@ auto main(int argc, char** argv) -> int {
 	try {
 		return example::run(argc, argv);
 	} catch (std::exception const& e) {
-		std::println(stderr, "PANIC: {}", e.what());
-		return EXIT_FAILURE;
+		std::println(std::cerr, "PANIC: {}", e.what());
+		return 1;
 	} catch (...) {
-		std::println("PANIC!");
-		return EXIT_FAILURE;
+		std::println(std::cerr, "PANIC!");
+		return 1;
 	}
 }
